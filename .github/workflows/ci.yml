@@ -1,57 +1,39 @@
-name: Task Branch Testing
+name: Task Branch Detection
 
 on:
   push:
-    branches: [main, master, task*]
+    branches: [main, task*]
   pull_request:
-    branches: [main, master, task*]
-
-env:
-  DOTNET_VERSION: '9.0.x'
-  DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: true
+    branches: [main]
 
 jobs:
   detect-task:
-    name: Detect Task
     runs-on: ubuntu-latest
-    outputs:
-      task_number: ${{ steps.extract.outputs.task_number }}
-      task_exists: ${{ steps.check.outputs.task_exists }}
     steps:
-    - uses: actions/checkout@v4
-    - id: extract
-      run: |
-        BRANCH_NAME="${{ github.ref_name }}"
-        if [[ $BRANCH_NAME =~ task([0-9]+) ]]; then
-          echo "task_number=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
-        else
-          echo "task_number=unknown" >> $GITHUB_OUTPUT
-        fi
-    - id: check
-      run: |
-        TASK_NUM="${{ steps.extract.outputs.task_number }}"
-        if [ "$TASK_NUM" != "unknown" ] && [ -d "task${TASK_NUM}" ]; then
-          echo "task_exists=true" >> $GITHUB_OUTPUT
-        else
-          echo "task_exists=false" >> $GITHUB_OUTPUT
-        fi
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-  post-results:
-    name: Post Results
-    runs-on: ubuntu-latest
-    needs: detect-task
-    if: always()
-    steps:
-    - run: |
-        TASK_NUM="${{ needs.detect-task.outputs.task_number }}"
-        echo "## Task Branch Testing Results" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Detected Task:** Task ${TASK_NUM}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        if [ "${{ needs.detect-task.outputs.task_exists }}" == "true" ]; then
-          echo "Task ${TASK_NUM} directory found." >> $GITHUB_STEP_SUMMARY
-        else
-          echo "Task ${TASK_NUM} directory not found." >> $GITHUB_STEP_SUMMARY
-        fi
+      - name: Detect task number from branch
+        id: detect
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          if [[ "$BRANCH" =~ task([0-9]+) ]]; then
+            echo "task_number=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+          else
+            echo "task_number=unknown" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if task directory exists
+        id: check
+        run: |
+          TASK="task${{ steps.detect.outputs.task_number }}"
+          if [ -d "$TASK" ]; then
+            echo "task_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "task_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Show results
+        run: |
+          echo "Detected task number: ${{ steps.detect.outputs.task_number }}"
+          echo "Task directory exists: ${{ steps.check.outputs.task_exists }}"
