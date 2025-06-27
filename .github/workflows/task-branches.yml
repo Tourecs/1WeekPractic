@@ -2,11 +2,9 @@ name: 🎯 Task Branch Testing
 
 on:
   push:
-    branches: 
-      - 'task*'
+    branches: [ main, master, task* ]
   pull_request:
-    branches: 
-      - 'task*'
+    branches: [ main, master, task* ]
 
 env:
   DOTNET_VERSION: '9.0.x'
