@@ -1,0 +1,217 @@
+name: 🎯 Task Branch Testing
+
+on:
+  push:
+    branches: 
+      - 'task*'
+  pull_request:
+    branches: 
+      - 'task*'
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  detect-task:
+    name: 🕵️ Detect Task
+    runs-on: ubuntu-latest
+    outputs:
+      task_number: ${{ steps.extract.outputs.task_number }}
+      task_exists: ${{ steps.check.outputs.task_exists }}
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🔍 Extract task number from branch
+      id: extract
+      run: |
+        BRANCH_NAME="${{ github.ref_name }}"
+        if [[ $BRANCH_NAME =~ task([0-9]+) ]]; then
+          TASK_NUM="${BASH_REMATCH[1]}"
+          echo "task_number=${TASK_NUM}" >> $GITHUB_OUTPUT
+          echo "Detected task: ${TASK_NUM}"
+        else
+          echo "task_number=unknown" >> $GITHUB_OUTPUT
+          echo "Could not detect task number from branch: $BRANCH_NAME"
+        fi
+        
+    - name: ✅ Check if task exists
+      id: check
+      run: |
+        TASK_NUM="${{ steps.extract.outputs.task_number }}"
+        if [ "$TASK_NUM" != "unknown" ] && [ -d "task${TASK_NUM}" ]; then
+          echo "task_exists=true" >> $GITHUB_OUTPUT
+          echo "Task ${TASK_NUM} directory found"
+        else
+          echo "task_exists=false" >> $GITHUB_OUTPUT
+          echo "Task ${TASK_NUM} directory not found"
+        fi
+
+  test-specific-task:
+    name: 🧪 Test Task ${{ needs.detect-task.outputs.task_number }}
+    runs-on: ${{ matrix.os }}
+    needs: detect-task
+    if: needs.detect-task.outputs.task_exists == 'true'
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🛠️ Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 📦 Restore dependencies
+      run: dotnet restore practice2025.sln
+
+    - name: 🔨 Build solution
+      run: dotnet build practice2025.sln --configuration Release --no-restore
+
+    - name: 🧪 Test current task
+      run: |
+        TASK_NUM="${{ needs.detect-task.outputs.task_number }}"
+        echo "Testing task${TASK_NUM}..."
+        
+        if [ -d "task${TASK_NUM}tests" ]; then
+          dotnet test "task${TASK_NUM}tests/" \
+            --configuration Release \
+            --no-build \
+            --verbosity normal \
+            --logger "console;verbosity=detailed" \
+            --logger "trx;LogFileName=task${TASK_NUM}-results.trx"
+        else
+          echo "❌ Test project task${TASK_NUM}tests not found"
+          exit 1
+        fi
+
+    - name: 🧪 Run related tests (if any)
+      run: |
+        TASK_NUM="${{ needs.detect-task.outputs.task_number }}"
+        echo "Running any dependent tests..."
+        
+        # Если это task01, проверяем только его
+        # Если task02+, проверяем предыдущие задания тоже
+        if [ "$TASK_NUM" -gt 1 ]; then
+          for i in $(seq 1 $((TASK_NUM-1))); do
+            if [ -d "task0${i}tests" ]; then
+              echo "Testing dependency: task0${i}..."
+              dotnet test "task0${i}tests/" \
+                --configuration Release \
+                --no-build \
+                --verbosity minimal
+            fi
+          done
+        fi
+
+    - name: 📊 Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: task-${{ needs.detect-task.outputs.task_number }}-results-${{ matrix.os }}
+        path: |
+          **/TestResults/**/*.trx
+
+  validate-task-completion:
+    name: ✅ Validate Task Completion
+    runs-on: ubuntu-latest
+    needs: [detect-task, test-specific-task]
+    if: needs.detect-task.outputs.task_exists == 'true'
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🔍 Check task completeness
+      run: |
+        TASK_NUM="${{ needs.detect-task.outputs.task_number }}"
+        echo "Validating task${TASK_NUM} completeness..."
+        
+        ERRORS=0
+        
+        # Проверяем наличие основного проекта
+        if [ ! -d "task${TASK_NUM}" ]; then
+          echo "❌ Missing task${TASK_NUM} project directory"
+          ERRORS=$((ERRORS + 1))
+        fi
+        
+        # Проверяем наличие тестового проекта
+        if [ ! -d "task${TASK_NUM}tests" ]; then
+          echo "❌ Missing task${TASK_NUM}tests project directory"
+          ERRORS=$((ERRORS + 1))
+        fi
+        
+        # Проверяем наличие .csproj файлов
+        if [ ! -f "task${TASK_NUM}/task${TASK_NUM}.csproj" ]; then
+          echo "❌ Missing task${TASK_NUM}.csproj file"
+          ERRORS=$((ERRORS + 1))
+        fi
+        
+        if [ ! -f "task${TASK_NUM}tests/task${TASK_NUM}tests.csproj" ]; then
+          echo "❌ Missing task${TASK_NUM}tests.csproj file"
+          ERRORS=$((ERRORS + 1))
+        fi
+        
+        # Проверяем наличие .cs файлов
+        CS_FILES=$(find "task${TASK_NUM}" -name "*.cs" | wc -l)
+        if [ "$CS_FILES" -eq 0 ]; then
+          echo "❌ No .cs files found in task${TASK_NUM}"
+          ERRORS=$((ERRORS + 1))
+        fi
+        
+        TEST_FILES=$(find "task${TASK_NUM}tests" -name "*Tests.cs" | wc -l)
+        if [ "$TEST_FILES" -eq 0 ]; then
+          echo "❌ No test files found in task${TASK_NUM}tests"
+          ERRORS=$((ERRORS + 1))
+        fi
+        
+        if [ $ERRORS -eq 0 ]; then
+          echo "✅ Task${TASK_NUM} appears to be complete!"
+          echo "   - Project directory: ✅"
+          echo "   - Test directory: ✅"
+          echo "   - .csproj files: ✅"
+          echo "   - Source files: ${CS_FILES} found"
+          echo "   - Test files: ${TEST_FILES} found"
+        else
+          echo "❌ Task${TASK_NUM} has ${ERRORS} issue(s)"
+          exit 1
+        fi
+
+  post-results:
+    name: 📋 Post Results
+    runs-on: ubuntu-latest
+    needs: [detect-task, test-specific-task, validate-task-completion]
+    if: always()
+    
+    steps:
+    - name: 📊 Generate summary
+      run: |
+        TASK_NUM="${{ needs.detect-task.outputs.task_number }}"
+        
+        echo "## 🎯 Task Branch Testing Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Detected Task:** Task ${TASK_NUM}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ needs.detect-task.outputs.task_exists }}" == "true" ]; then
+          echo "### Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Task Detection | ✅ Task ${TASK_NUM} found |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ needs.test-specific-task.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Validation | ${{ needs.validate-task-completion.result == 'success' && '✅ Complete' || '❌ Incomplete' }} |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "### ❌ Task Not Found" >> $GITHUB_STEP_SUMMARY
+          echo "Task ${TASK_NUM} directory was not found in the repository." >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "🔗 [View detailed logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
