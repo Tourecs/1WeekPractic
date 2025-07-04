@@ -1,0 +1,12 @@
+C:\Users\medic\OneDrive\Документы\studword\C#\CommandLib\bin\Debug\net9.0\CommandLib.deps.json
+C:\Users\medic\OneDrive\Документы\studword\C#\CommandLib\bin\Debug\net9.0\CommandLib.dll
+C:\Users\medic\OneDrive\Документы\studword\C#\CommandLib\bin\Debug\net9.0\CommandLib.pdb
+C:\Users\medic\OneDrive\Документы\studword\C#\CommandLib\obj\Debug\net9.0\CommandLib.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\medic\OneDrive\Документы\studword\C#\CommandLib\obj\Debug\net9.0\CommandLib.AssemblyInfoInputs.cache
+C:\Users\medic\OneDrive\Документы\studword\C#\CommandLib\obj\Debug\net9.0\CommandLib.AssemblyInfo.cs
+C:\Users\medic\OneDrive\Документы\studword\C#\CommandLib\obj\Debug\net9.0\CommandLib.csproj.CoreCompileInputs.cache
+C:\Users\medic\OneDrive\Документы\studword\C#\CommandLib\obj\Debug\net9.0\CommandLib.sourcelink.json
+C:\Users\medic\OneDrive\Документы\studword\C#\CommandLib\obj\Debug\net9.0\CommandLib.dll
+C:\Users\medic\OneDrive\Документы\studword\C#\CommandLib\obj\Debug\net9.0\refint\CommandLib.dll
+C:\Users\medic\OneDrive\Документы\studword\C#\CommandLib\obj\Debug\net9.0\CommandLib.pdb
+C:\Users\medic\OneDrive\Документы\studword\C#\CommandLib\obj\Debug\net9.0\ref\CommandLib.dll

@@ -1,0 +1,16 @@
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\bin\Debug\net9.0\task08.deps.json
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\bin\Debug\net9.0\task08.dll
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\bin\Debug\net9.0\task08.pdb
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\bin\Debug\net9.0\CommandLib.dll
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\bin\Debug\net9.0\CommandLib.pdb
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\obj\Debug\net9.0\task08.csproj.AssemblyReference.cache
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\obj\Debug\net9.0\task08.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\obj\Debug\net9.0\task08.AssemblyInfoInputs.cache
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\obj\Debug\net9.0\task08.AssemblyInfo.cs
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\obj\Debug\net9.0\task08.csproj.CoreCompileInputs.cache
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\obj\Debug\net9.0\task08.sourcelink.json
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\obj\Debug\net9.0\task08.csproj.Up2Date
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\obj\Debug\net9.0\task08.dll
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\obj\Debug\net9.0\refint\task08.dll
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\obj\Debug\net9.0\task08.pdb
+C:\Users\medic\OneDrive\Документы\studword\C#\task08\obj\Debug\net9.0\ref\task08.dll
