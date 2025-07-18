@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "a1NKZfn0IRA=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\medic\\OneDrive\\Документы\\studword\\C#\\task13\\task13.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\medic\\.nuget\\packages\\system.componentmodel.annotations\\5.0.0\\system.componentmodel.annotations.5.0.0.nupkg.sha512",
+    "C:\\Users\\medic\\.nuget\\packages\\system.text.json\\9.0.7\\system.text.json.9.0.7.nupkg.sha512"
+  ],
+  "logs": []
+}
